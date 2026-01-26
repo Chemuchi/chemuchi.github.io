@@ -1,6 +1,6 @@
 ---
 title: "{{title}}"
-data: {{date}} {{time}}
+date: {{date}} {{time}}
 draft: false
 categories:
   -
