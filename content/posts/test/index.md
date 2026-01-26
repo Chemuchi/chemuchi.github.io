@@ -1,16 +1,14 @@
 ---
-title: Test
-data: 2026-01-26 17:44
+title: "index"
+date: 2026-01-26 18:46
 draft: false
 categories:
-  - 테스트
-  - 카테고리
+  -
 tags:
-  - 테스트
-  - 태그
-description: 설명입니다.
-image: '"index-20260126.png"'
+  -
+description:
+image:
+	src: "index-20260126-1.png"
 ---
-테스트임 ㅇㅇ
-![](index-20260126.png)
+테스트 ㅇㅇㅇ
 ![](index-20260126-1.png)
