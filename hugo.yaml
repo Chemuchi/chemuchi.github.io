@@ -1,4 +1,4 @@
-baseURL: "http://example.org/|https://chemuchi.github.io/"
+baseURL: "https://chemuchi.github.io/"
 languageCode: "ko-kr"
 title: "내 블로그"
 theme: "hugo-theme-stack"
