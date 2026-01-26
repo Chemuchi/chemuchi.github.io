@@ -1,9 +1,7 @@
 ---
 title: "{{title}}"
-date: "{{date}} {{time}}"
+date: "{{date:YYYY-MM-DD}}"
 draft: false
-categories:
-  -
 tags:
   -
 description:
