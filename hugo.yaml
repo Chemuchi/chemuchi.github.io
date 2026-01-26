@@ -1,0 +1,30 @@
+baseURL: "http://example.org/|https://chemuchi.github.io/"
+languageCode: "ko-kr"
+title: "내 블로그"
+theme: "hugo-theme-stack"
+copyright: "Me"
+
+# 메뉴 설정 (아이콘 없이 기본 텍스트만 표시)
+menu:
+  main:
+    - identifier: home
+      name: Home
+      url: /
+      weight: 1
+
+params:
+  # 사이드바 설정
+  sidebar:
+    emoji: 🍥
+    subtitle: "개발자 블로그"
+    avatar:
+      local: true
+      src: img/avatar.png 
+
+  # 게시글 목록 설정
+  mainSections:
+    - posts
+  
+  # 날짜 형식
+  dateFormat:
+    published: "2006-01-02"
