@@ -9,7 +9,7 @@ tags:
   - 테스트
   - 태그
 description: 설명입니다.
-image: index-2026126.png
+image: '"index-20260126.png"'
 ---
 테스트임 ㅇㅇ
 ![](index-20260126.png)
