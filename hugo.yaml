@@ -1,30 +1,40 @@
 baseURL: "https://chemuchi.github.io/"
 languageCode: "ko-kr"
-title: "내 블로그"
+title: "비주기적 메모장"
 theme: "hugo-theme-stack"
-copyright: "Me"
+copyright: "ash_hyeong"
+hasCJKLanguage: true
 
-# 메뉴 설정 (아이콘 없이 기본 텍스트만 표시)
+params:
+  dateFormat:
+    published: "2000-01-01"
+    lastUpdated: "2000-01-01"
+
+  sidebar:
+    subtitle: "뜌뚜따이 DevOps 고수가 될거야"
+    avatar:
+      src: "static/img/avatar.png"
+      local: true
+  article:
+    toc: true
+    math: false
+    readingTime: false
+
+  footer:
+    since: 2026
+    copyrightText: "Jeong Jae Hyeong"
+
 menu:
   main:
     - identifier: home
       name: Home
       url: /
       weight: 1
+      param:
+        icon: home
 
-params:
-  # 사이드바 설정
-  sidebar:
-    emoji: 🍥
-    subtitle: "개발자 블로그"
-    avatar:
-      local: true
-      src: img/avatar.png 
-
-  # 게시글 목록 설정
-  mainSections:
-    - posts
-  
-  # 날짜 형식
-  dateFormat:
-    published: "2006-01-02"
+markup:
+  highlight:
+    style: "github-dark"
+    lineNos: true
+    lineNumberInTable: true
