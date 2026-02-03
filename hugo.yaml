@@ -10,6 +10,9 @@ params:
     published: "2006-01-02"
     lastUpdated: "2006-01-02"
 
+  mainSections:
+    - posts
+
   sidebar:
     subtitle: "뜌뚜따이 DevOps 고수가 될거야"
     avatar:

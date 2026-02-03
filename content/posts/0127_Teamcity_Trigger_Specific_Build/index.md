@@ -1,6 +1,6 @@
 ---
 title: Teamcity 에서 특정 변경사항만 감지하고 빌드하기
-date: 2026-01-27
+date: "2026-01-27"
 draft: false
 tags:
   - 팀시티
