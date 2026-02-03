@@ -7,13 +7,13 @@ hasCJKLanguage: true
 
 params:
   dateFormat:
-    published: "2000-01-01"
-    lastUpdated: "2000-01-01"
+    published: "2006-01-02"
+    lastUpdated: "2006-01-02"
 
   sidebar:
     subtitle: "뜌뚜따이 DevOps 고수가 될거야"
     avatar:
-      src: "static/img/avatar.png"
+      src: "img/avatar.png"
       local: true
   article:
     toc: true
@@ -30,11 +30,11 @@ menu:
       name: Home
       url: /
       weight: 1
-      param:
+      params:
         icon: home
 
 markup:
   highlight:
     style: "github-dark"
     lineNos: true
-    lineNumberInTable: true
+    lineNumbersInTable: true
