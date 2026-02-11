@@ -7,13 +7,395 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>ko-kr</language>
         <copyright>ash_hyeong</copyright>
-        <lastBuildDate>Mon, 26 Jan 2026 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 27 Jan 2026 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Teamcity 에서 특정 변경사항만 감지하고 빌드하기</title>
+        <link>http://localhost:1313/posts/0127_teamcity_trigger_specific_build/</link>
+        <pubDate>Tue, 27 Jan 2026 00:00:00 +0000</pubDate>
+        
+        <guid>http://localhost:1313/posts/0127_teamcity_trigger_specific_build/</guid>
+        <description>&lt;p&gt;Teamcity 세팅은 추후 글을 작성하도록 한다.&lt;/p&gt;
+&lt;p&gt;먼저 새로운 프로젝트를 생성해줌.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127.png&#34;
+	width=&#34;1152&#34;
+	height=&#34;878&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127_hu_ed90fef066f25a1.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127_hu_d208c7490ddbbdfe.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;131&#34;
+		data-flex-basis=&#34;314px&#34;
+	
+&gt;
+빌드 구성(Build configuration)과 파이프라인(Pipeline)중 선택이 가능한데, 파이프라인은 따로 신청해야 사용이 가능하기 때문에 빌드 구성으로 진행.
+이전에 Github 계정을 연결했기 때문에 사용할 레포를 선택 후 세부 설정을 진행한다.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-1.png&#34;
+	width=&#34;1162&#34;
+	height=&#34;1026&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-1_hu_74d551da6397b868.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-1_hu_5a4dba38542b4c69.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;113&#34;
+		data-flex-basis=&#34;271px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Teamcity 테스트 및 적응을 위해 임시로 만든 목업 프로젝트로 진행한다&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;목업 프로젝트는 하나의 레포에 Frontend와 services/coupon-service, services/user-service 가 나누어져 있기 때문에, 서브 프로젝트로 먼저 쿠폰 서비스만 나누어 주었다.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-3.png&#34;
+	width=&#34;1774&#34;
+	height=&#34;812&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-3_hu_b6a93098b58df1ec.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-3_hu_84298d59764b29a2.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;218&#34;
+		data-flex-basis=&#34;524px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;목업 프로젝트의 디렉토리 구조 모습&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-4.png&#34;
+	width=&#34;662&#34;
+	height=&#34;206&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-4_hu_e90a4f0620cd9a42.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-4_hu_a3b653dd519f1bb1.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;321&#34;
+		data-flex-basis=&#34;771px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;글 작성전에 미리 해본 구조&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;프로젝트를 만들고 빌드 구성을 완료하면 자동으로 빌드 스탭을 감지하여 보여준다.
+하지만 이건 사용하지 않고, 따로 구성해서 사용할 예정임.&lt;/p&gt;
+&lt;p&gt;일단 흐름은 다음과 흘러가도록 할 예정
+커밋감지 -&amp;gt; 설정한 트리거인가 -&amp;gt; 맞으면 빌드 진행 -&amp;gt; 빌드 후 ECR로 푸시&lt;/p&gt;
+&lt;p&gt;그러니 우선 커밋을 감지하는 기능부터 설정해야할텐데, Github 레포를 연결해놨기에 자동으로 Teamcity에서 감지하도록 설정을 해준다.&lt;/p&gt;
+&lt;p&gt;빌드 구성을 보면 General, Version Control, Build Step 등등 있는데, 여기서 Version Control에 들어간다.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-5.png&#34;
+	width=&#34;1876&#34;
+	height=&#34;682&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-5_hu_64804fbc4750c397.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-5_hu_2626c01594f4b745.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;275&#34;
+		data-flex-basis=&#34;660px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;이미지를 보면 Changes checking interval: 1m 이라고 써있는데, 이는 1분마다 Github의 변경사항을 감지한다는 말&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;그럼 이제 두번째로 트리거를 설정할 차례이다.
+services/coupon-service 안의 내용이 변경되었을 경우에만 빌드 스탭이 진행되도록 할것이다.&lt;/p&gt;
+&lt;p&gt;위의 이미지에 나오는 Triggers 탭으로 이동해 + Add new trigger 버튼을 클릭한다.
+그러면 Add New Trigger 라는 탭이 나오고, 트리거를 선택하라고 하는데, 여기서 VCS Trigger를 선택한다.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-6.png&#34;
+	width=&#34;1678&#34;
+	height=&#34;942&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-6_hu_3e74d494a3fc044b.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-6_hu_5c884aaa8bdf60a4.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;178&#34;
+		data-flex-basis=&#34;427px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;기본적으로 브랜치관련 설정만 나올텐데, 좌하단의 Show advanced options를 선택하면 추가적인 설정이 나오게 된다.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-7.png&#34;
+	width=&#34;1678&#34;
+	height=&#34;1464&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-7_hu_26cbe2916cc8d871.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-7_hu_d73b127ea439fc2d.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;114&#34;
+		data-flex-basis=&#34;275px&#34;
+	
+&gt;
+여기서 하단에 있는 + Add new rule 를 클릭한다.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-8.png&#34;
+	width=&#34;1006&#34;
+	height=&#34;782&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-8_hu_1b8ffdb33e0b9804.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-8_hu_6282081d3f56b20e.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;128&#34;
+		data-flex-basis=&#34;308px&#34;
+	
+&gt;
+나는 빌드가 작동해야 하니 Rule Type은 Trigger Build 로 설정해주고,
+VCS username은 아마 특정 사용자의 커밋을 트리거해주는게 아닐까..싶고
+VCS root는 작업할 레포를 선택해주는건데 일단 누르면 나오는 레포로 설정
+그리고 중요한게 File wildcard 설정이다.&lt;/p&gt;
+&lt;p&gt;프로젝트 구조를 보면 다음과 같은데,&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;.
+├── docker/
+│   └── init-db/
+├── docs/
+├── frontend/
+├── services/
+│   └── coupon-service/ &amp;lt;-- 여기에 Dockerfile 있음
+│   └── user-service/
+├── .env.example
+├── .gitignore
+├── Makefile
+├── README.md
+├── docker-compose.yml
+└── make.md
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;나는 services/coupon-service 내의 파일들에 변경사항이 생겼을 때, 빌드가 진행되도록 해야하니 File wildcard를 &lt;code&gt;**/coupon_service/**&lt;/code&gt;로 설정한다.
+Wildcard 세팅 관련 해서는 &lt;a class=&#34;link&#34; href=&#34;https://www.jetbrains.com/help/teamcity/wildcards.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;공식 문서&lt;/a&gt;를 참고하자.&lt;/p&gt;
+&lt;p&gt;위에 작성한건 상위 폴더 상관없이 coupon_service내의 모든 파일 변경사항을 감지하도록 하는 설정이다.&lt;/p&gt;
+&lt;p&gt;저장하고 이제 Build Feature 탭에서 + Add build feature 를 누르고, Docker Registry Connections 를 선택한다.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-9.png&#34;
+	width=&#34;1672&#34;
+	height=&#34;724&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-9_hu_a5c1dd5be4744947.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-9_hu_1a5dced7ef49e413.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;230&#34;
+		data-flex-basis=&#34;554px&#34;
+	
+&gt;
+여기서 + Add registry connection 을 눌러도 아무것도 뜨지 않는다. 먼저 프로젝트에 ECR을 연결시켜주는 작업이 필요하기 때문이다.
+하이라이트된 Project Connections 을 눌러 창을 이동한다.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-10.png&#34;
+	width=&#34;1582&#34;
+	height=&#34;1372&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-10_hu_2c4315db7f609203.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260127-10_hu_92ac666ec8ba1bc8.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;115&#34;
+		data-flex-basis=&#34;276px&#34;
+	
+&gt;
+이동하면 이런 창이 뜰텐데, 여기서 + Add Connection 을 누르고 나오는 탭에서 Connection Type 을 Amazon ECR로 정한다.(AWS 와 ECR 관련된 내용은 스킵&amp;hellip;. )
+나는 IAM 사용자를 만들고, &lt;code&gt;AmazonEC2ContainerRegistryPowerUser&lt;/code&gt; 정책만 부여하였다.&lt;/p&gt;
+&lt;p&gt;아무튼 타입까지 설정하면 탭이 다음과 같이 변할텐데,
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203.png&#34;
+	width=&#34;1258&#34;
+	height=&#34;1300&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203_hu_7f569e9b95207152.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203_hu_78abc5468a3b8e6d.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;96&#34;
+		data-flex-basis=&#34;232px&#34;
+	
+&gt;
+AWS region은 사용할 버킷의 리전
+Access Key ID는 Teamcity가 사용할 사용자의 ID
+Secret access key는 Teamcity가 사용할 사용자의 시크릿
+Target account ID는 계정 ID (1234-5678-9101)을 넣어준다&lt;/p&gt;
+&lt;p&gt;그리고 Test Connection을 눌러 연결을 테스트한다.
+문제가 있다면 AWS region 칸에, 문제없이 연결에 성공하면 Test Connection 이라는 탭이 뜨며 Connection successful! 이라고 뜬다.&lt;/p&gt;
+&lt;p&gt;연결이 되었다면 Save를 눌러 저장해준다.&lt;/p&gt;
+&lt;p&gt;다시 Build Features 로 돌아와 + Add build feature를 눌러 Docker Registry Connections 를 선택해 + add registry connection을 누르면 기존과 달리 Amazon ECR이 뜰것이다.
+Add 를 눌러 제대로 들어갔는지 확인 후 Save를 누른다.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-2.png&#34;
+	width=&#34;1672&#34;
+	height=&#34;964&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-2_hu_379f740202e0eff4.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-2_hu_d599936fd44d112d.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;173&#34;
+		data-flex-basis=&#34;416px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;이제는 Build Steps에 가서 설정을 해야한다.
+들어가서 + Add Build step을 클릭한다.
+여러가지 중 나는 Command Line을 사용하여 빌드를 할 예정이다.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-3.png&#34;
+	width=&#34;1856&#34;
+	height=&#34;1778&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-3_hu_74b375ddf525b881.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-3_hu_fea5c1146b2c2ac2.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;104&#34;
+		data-flex-basis=&#34;250px&#34;
+	
+&gt;
+들어가면 이러한 창이 뜰텐데, 내용은 다음과 같다. (사진은 고급 설정이 보이는 상태)
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-4.png&#34;
+	width=&#34;1764&#34;
+	height=&#34;1590&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-4_hu_827f4d49c7644d16.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-4_hu_36be7d27ac14ffce.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;110&#34;
+		data-flex-basis=&#34;266px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Step name: 빌드 이름을 지정한다.&lt;/li&gt;
+&lt;li&gt;Step ID: 이경우엔 자동적으로 Step name에 따라 지정된다&lt;/li&gt;
+&lt;li&gt;Execute step: 빌드 발동 기준&lt;/li&gt;
+&lt;li&gt;Working directory: 작업 디렉토리를 설정하는 옵션인데, 여기서는 coupon-service를 위해 Dockerfile 을 사용해 이미지를 빌드할것이기 때문에 services/coupon-service로 Dockerfile이 위치한 디렉토리를 잡아준다.&lt;/li&gt;
+&lt;li&gt;Custom script: 스크립트를 작성하는데, 나는 아래와 같이 작성하였다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div style=&#34;color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;
+&lt;table style=&#34;border-spacing:0;padding:0;margin:0;border:0;&#34;&gt;&lt;tr&gt;&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; style=&#34;color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 1
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 2
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 3
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 4
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 5
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 6
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 7
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 8
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 9
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt;10
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt;11
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt;12
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt;13
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt;14
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt;15
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt;16
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;;width:100%&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; style=&#34;color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#8b949e;font-style:italic&#34;&gt;# 에러 발생시 멈춤. 이게 없으면 중간에 에러가 나도 Teamcity가 성공적으로 빌드하였다고 생각한다.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;set -e 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;IMAGE_URI&lt;/span&gt;&lt;span style=&#34;color:#ff7b72;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;%env.ECR_URI%&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;TAG_NUMBER&lt;/span&gt;&lt;span style=&#34;color:#ff7b72;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;%teamcity.build.id%&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;FULL_NAME&lt;/span&gt;&lt;span style=&#34;color:#ff7b72;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;IMAGE_URI&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;TAG_NUMBER&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;-----------------------------------------&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34; &amp;gt; 빌드정보&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34; 	 - Image: &lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;FULL_NAME&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;-----------------------------------------&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34; &amp;gt; 빌드 시작&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;docker build -t &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;$FULL_NAME&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;&lt;/span&gt; .
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34; &amp;gt; 모든 빌드 과정 완료&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;저장하고 나간 후 스크립트에서 사용한 ECR_URI 값을 설정해준다.
+General, Version Control 등이 있는 탭에서 Parameters 를 클릭해 들어간다.&lt;/p&gt;
+&lt;p&gt;+ Add new parameter 를 누르면 창이 뜨는데, 여기에 설정을 해준다.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-5.png&#34;
+	width=&#34;1230&#34;
+	height=&#34;756&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-5_hu_86f3d07f20fb8623.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-5_hu_b980aa0640b85aa6.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;162&#34;
+		data-flex-basis=&#34;390px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Name: 변수 이름을 넣는 곳인데, 앞에 env. 를 붙이면 Kind 까지 자동으로 설정된다.&lt;/li&gt;
+&lt;li&gt;Value type: 값의 타입을 설정하는데, 여기선 엄청 중요한 정보를 담을것이 아니기 떄문에 Text로 설정한다.&lt;/li&gt;
+&lt;li&gt;Value: 값을 넣는 곳인데, 여기선 사용할 ECR의 링크를 넣어준다.
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;xxxxxxxxxxx.dkr.ecr.ap-northeast-2.amazonaws.com/mockup/coupon-service&lt;/code&gt; 형식으로 넣어준다.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;다시 Build Steps 로 돌아와 이번엔 ECR에 Push 할 과정을 설정한다.
+나는 아래와 같이 설정하였다.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-6.png&#34;
+	width=&#34;1978&#34;
+	height=&#34;1786&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-6_hu_c58f484ac799118c.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-6_hu_1778b0a8fb70d0a1.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;110&#34;
+		data-flex-basis=&#34;265px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div style=&#34;color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;
+&lt;table style=&#34;border-spacing:0;padding:0;margin:0;border:0;&#34;&gt;&lt;tr&gt;&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; style=&#34;color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 1
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 2
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 3
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 4
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 5
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 6
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 7
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 8
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt; 9
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt;10
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt;11
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt;12
+&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#737679&#34;&gt;13
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;;width:100%&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; style=&#34;color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;set -e
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;IMAGE_URI&lt;/span&gt;&lt;span style=&#34;color:#ff7b72;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;%env.ECR_URI%&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;TAG_VERSION&lt;/span&gt;&lt;span style=&#34;color:#ff7b72;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;%teamcity.build.id%&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;FULL_IMAGE_NAME&lt;/span&gt;&lt;span style=&#34;color:#ff7b72;font-weight:bold&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;IMAGE_URI&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;${&lt;/span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;TAG_VERSION&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34; &amp;gt; ECR로 이미지 푸시&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;docker push &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;$FULL_IMAGE_NAME&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34; &amp;gt; 이미지 정리&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;docker rmi &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#79c0ff&#34;&gt;$FULL_IMAGE_NAME&lt;/span&gt;&lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;echo &lt;span style=&#34;color:#a5d6ff&#34;&gt;&amp;#34;!======완료======!&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;이제 빌드 설정은 모두 끝났으니 테스트를 해볼 시간이다.&lt;/p&gt;
+&lt;p&gt;레포지토리안의 coupon-service 파일에 들어가 아무 파일이나 수정하고 커밋을 해보았다.
+잠시 후 Pending changes에 변경사항이 떴고, Agent가 바로 받아 일을 하기 시작했다.
+&lt;img src=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-7.png&#34;
+	width=&#34;2662&#34;
+	height=&#34;1324&#34;
+	srcset=&#34;http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-7_hu_7262cdbf9f644d3c.png 480w, http://localhost:1313/posts/0127_teamcity_trigger_specific_build/index-20260203-7_hu_1fbabae150d910.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;201&#34;
+		data-flex-basis=&#34;482px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;모든 과정이 완료된다면 게이지 창에서 Step 1/2 와 Step 2/2 로 나누어진걸 볼 수 있다.
+각 과정을 누르면 로그를 볼 수 있는데 정상적으로 Push 까지 완료된걸 볼 수 있다.&lt;/p&gt;
+&lt;p&gt;실제로도 ECR에 들어가보면 실제로 이미지가 들어간것을 볼 수 있다!
+이렇게 Teamcity에 레포를 연결하고, 특정 변경사항이 생겼을때만 빌드 작업을 진행하도록 하는 방법을 알아볼 수 있었다.&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>index</title>
         <link>http://localhost:1313/posts/test/</link>
         <pubDate>Mon, 26 Jan 2026 00:00:00 +0000</pubDate>
         
         <guid>http://localhost:1313/posts/test/</guid>
-        <description>&lt;p&gt;테스트임 시
+        <description>&lt;p&gt;ㅈㅈㅈㅈㅈㅈㅈ
+테스트임 시
 &lt;img src=&#34;http://localhost:1313/posts/test/index-20260126-2.png&#34;
 	width=&#34;1406&#34;
 	height=&#34;1096&#34;
