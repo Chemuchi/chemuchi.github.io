@@ -117,7 +117,7 @@ module "ecr_services" {
 }
 ```
 
-### 개발팀이 만든 서버를 위한 Dockerfile 만들기
+## 개발팀이 만든 서버를 위한 Dockerfile 만들기
 프로젝트 루트에 서비스가 나누어져 있어 각 서비스 폴더 루트에 Dockerfile을 추가하였다
 ```dockerfile
 # Auth-Guard 서비스의 Dockerfile
