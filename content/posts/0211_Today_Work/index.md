@@ -1,5 +1,5 @@
 ---
-title: 오늘한일 정리
+title: 2026-02-11 정리
 date: "2026-02-11"
 draft: false
 tags:
