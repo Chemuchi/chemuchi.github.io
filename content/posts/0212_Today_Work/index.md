@@ -5,8 +5,9 @@ draft: false
 tags:
 description:
 ---
+## 오늘 한일
 
-## Docker Compose 작업
+### Docker Compose 작업
 개발팀을 위해 기존 docker-compose.yml 파일 수정하여 모든 서비스들이 DB와 같이 생성되도록 하였음
 
 생성 되는거만 확인하였고, 실제로 통신이 되는지 확인은 따로 필요
@@ -64,7 +65,7 @@ echo "✅ Build & Push Completed!"
 
 ![빌드 성공 이미지](image-1.png)
 
-## 팀별 Teamcity 접근 계정 생성
+### 팀별 Teamcity 접근 계정 생성
 클라우드 네이티브(본인)팀은 개인 계정 + 어드민 권한  
 백엔드팀은 공용 계정 + Read Only
 
